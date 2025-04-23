@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define MAX 5
+int buffer[MAX];
+int in = 0, out = 0;
+
+sem_t empty, full, mutex;
+
+void* producer(void* arg) {
+    int item;
+    for (int i = 0; i < 10; i++) {
+        item = rand() % 100; // Produce an item
+        sem_wait(&empty);
+        sem_wait(&mutex);
+        buffer[in] = item;
+        printf("Produced: %d\n", item);
+        in = (in + 1) % MAX;
+        sem_post(&mutex);
+        sem_post(&full);
+    }
+}
+
+void* consumer(void* arg) {
+    int item;
+    for (int i = 0; i < 10; i++) {
+        sem_wait(&full);
+        sem_wait(&mutex);
+        item = buffer[out];
+        printf("Consumed: %d\n", item);
+        out = (out + 1) % MAX;
+        sem_post(&mutex);
+        sem_post(&empty);
+    }
+}
+
+int main() {
+    pthread_t prod, cons;
+    sem_init(&empty, 0, MAX); // Initialize empty semaphore to MAX
+    sem_init(&full, 0, 0);    // Initialize full semaphore to 0
+    sem_init(&mutex, 0, 1);   // Initialize mutex to 1
+
+    pthread_create(&prod, NULL, producer, NULL);
+    pthread_create(&cons, NULL, consumer, NULL);
+
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    sem_destroy(&mutex);
+
+    return 0;
+}
