@@ -1,70 +1,78 @@
 #include <stdio.h>
 
-void findWaitingTime(int processes[], int n, int bt[], int wt[], int quantum) {
-    int rem_bt[n];
-    for (int i = 0; i < n; i++)
-        rem_bt[i] = bt[i];
-
-    int time = 0;
-    while (1) {
-        int done = 1;
-        for (int i = 0; i < n; i++) {
-            if (rem_bt[i] > 0) {
-                done = 0;
-                if (rem_bt[i] > quantum) {
-                    time += quantum;
-                    rem_bt[i] -= quantum;
-                } else {
-                    time += rem_bt[i];
-                    wt[i] = time - bt[i];
-                    rem_bt[i] = 0;
-                }
-            }
-        }
-        if (done)
-            break;
-    }
-}
-
-void findTurnAroundTime(int processes[], int n, int bt[], int wt[], int tat[]) {
-    for (int i = 0; i < n; i++)
-        tat[i] = bt[i] + wt[i];
-}
-
-void findAvgTime(int processes[], int n, int bt[], int quantum) {
-    int wt[n], tat[n];
-    findWaitingTime(processes, n, bt, wt, quantum);
-    findTurnAroundTime(processes, n, bt, wt, tat);
-
-    int total_wt = 0, total_tat = 0;
-    for (int i = 0; i < n; i++) {
-        total_wt += wt[i];
-        total_tat += tat[i];
-    }
-
-    printf("\nProcess\tBurst Time\tWaiting Time\tTurnaround Time\n");
-    for (int i = 0; i < n; i++)
-        printf("%d\t%d\t\t%d\t\t%d\n", processes[i], bt[i], wt[i], tat[i]);
-
-    printf("\nAverage waiting time: %.2f", (float)total_wt / n);
-    printf("\nAverage turnaround time: %.2f", (float)total_tat / n);
-}
-
-int main() {
-    int n, quantum;
-    printf("Enter number of processes: ");
+int main()
+{
+    int n, i, sum = 0, count = 0, y, quant, wt = 0, tat = 0, at[10], bt[10], temp[10], ct[10];
+    float avg_wt, avg_tat;
+    
+    // Input the number of processes
+    printf("\nEnter number of processes: ");
     scanf("%d", &n);
-    int processes[n], bt[n];
-
-    printf("Enter burst time for each process:\n");
-    for (int i = 0; i < n; i++) {
-        processes[i] = i + 1;
+    y = n;
+    
+    // Input arrival time and burst time for each process
+    for (i = 0; i < n; i++)
+    {
+        printf("\nEnter arrival time and burst time of process %d", i + 1);
+        printf("\nArrival time: ");
+        scanf("%d", &at[i]);
+        printf("Burst time: ");
         scanf("%d", &bt[i]);
+        temp[i] = bt[i];
     }
-
-    printf("Enter time quantum: ");
-    scanf("%d", &quantum);
-
-    findAvgTime(processes, n, bt, quantum);
+    
+    // Input time quantum
+    printf("\nEnter time quantum for the process: ");
+    scanf("%d", &quant);
+    
+    printf("\nProcess  BT  TAT  WT\n");
+    
+    // Round Robin scheduling
+    for (sum = 0, i = 0; y != 0;)
+    {
+        if (temp[i] <= quant && temp[i] > 0)
+        {
+            sum = sum + temp[i]; // Time progresses by the burst time of the process
+            temp[i] = 0; // Process is completed
+            count = 1; // Mark as completed
+        }
+        else if (temp[i] > 0)
+        {
+            temp[i] = temp[i] - quant; // Reduce the burst time
+            sum = sum + quant; // Time progresses by the time quantum
+        }
+        
+        if (temp[i] == 0 && count == 1)
+        {
+            y--; // Decrease the remaining process count
+            ct[i] = sum; // Store the completion time of the process
+            printf("\nP%d\t%d\t%d\t%d", i + 1, bt[i], ct[i] - at[i], ct[i] - at[i] - bt[i]);
+            wt = wt + (ct[i] - at[i] - bt[i]); // Add to total waiting time
+            tat = tat + (ct[i] - at[i]); // Add to total turnaround time
+            count = 0; // Reset the count
+        }
+        
+        // Round Robin Logic: Go to the next process or restart from the first process
+        if (i == n - 1)
+        {
+            i = 0;
+        }
+        else if (at[i + 1] <= sum)
+        {
+            i++;
+        }
+        else
+        {
+            i = 0;
+        }
+    }
+    
+    // Calculate the average waiting time and turnaround time
+    avg_wt = (float)wt / n;
+    avg_tat = (float)tat / n;
+    
+    printf("\nAverage Turnaround Time: %f", avg_tat);
+    printf("\nAverage Waiting Time: %f\n", avg_wt);
+    
     return 0;
 }
