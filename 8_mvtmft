@@ -1,0 +1,77 @@
+#include <stdio.h>
+
+int main() {
+    int choice;
+
+    printf("Choose Memory Management Technique:\n");
+    printf("1. MVT (Variable Partitioning)\n");
+    printf("2. MFT (Fixed Partitioning)\n");
+    printf("Enter your choice (1 or 2): ");
+    scanf("%d", &choice);
+
+    if (choice == 1) {
+        // -------- MVT --------
+        int total_memory, used = 0, process_size, i, n;
+
+        printf("\nEnter total memory available: ");
+        scanf("%d", &total_memory);
+        printf("Enter number of processes: ");
+        scanf("%d", &n);
+
+        for (i = 1; i <= n; i++) {
+            printf("Enter memory required for process %d: ", i);
+            scanf("%d", &process_size);
+
+            if (used + process_size <= total_memory) {
+                used += process_size;
+                printf("Memory allocated to Process %d\n", i);
+            } else {
+                printf("Not enough memory for Process %d. Stopping...\n", i);
+                break;
+            }
+        }
+
+        printf("\n[MVT Result]");
+        printf("\nTotal Memory Allocated: %d", used);
+        printf("\nExternal Fragmentation (Remaining Memory): %d\n", total_memory - used);
+
+    } else if (choice == 2) {
+        // -------- MFT --------
+        int total_mem, block_size, num_blocks, internal_frag = 0, external_frag;
+        int process_size, i, n;
+
+        printf("\nEnter total memory: ");
+        scanf("%d", &total_mem);
+        printf("Enter block size: ");
+        scanf("%d", &block_size);
+        printf("Enter number of processes: ");
+        scanf("%d", &n);
+
+        num_blocks = total_mem / block_size;
+        external_frag = total_mem % block_size;
+
+        for (i = 0; i < n && i < num_blocks; i++) {
+            printf("Enter memory required for process %d: ", i + 1);
+            scanf("%d", &process_size);
+
+            if (process_size > block_size) {
+                printf("Process %d too large. Cannot allocate.\n", i + 1);
+            } else {
+                printf("Memory allocated to Process %d\n", i + 1);
+                internal_frag += block_size - process_size;
+            }
+        }
+
+        if (i < n) {
+            printf("Memory full. Remaining processes cannot be accommodated.\n");
+        }
+
+        printf("\n[MFT Result]");
+        printf("\nTotal Internal Fragmentation: %d", internal_frag);
+        printf("\nTotal External Fragmentation: %d\n", external_frag);
+    } else {
+        printf("Invalid choice.\n");
+    }
+
+    return 0;
+}
