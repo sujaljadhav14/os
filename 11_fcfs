@@ -1,0 +1,109 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int abs_diff(int a, int b) {
+    return abs(a - b);
+}
+
+void fcfs(int requests[], int n, int head) {
+    int total_movements = 0;
+    printf("\nFCFS Order: %d ", head);
+    for (int i = 0; i < n; i++) {
+        total_movements += abs_diff(requests[i], head);
+        head = requests[i];
+        printf("-> %d ", head);
+    }
+    printf("\nTotal Head Movements: %d\n", total_movements);
+}
+
+void scan(int requests[], int n, int head, int disk_size) {
+    int total_movements = 0;
+    int left[100], right[100], left_count = 0, right_count = 0;
+
+    // Dividing the requests into left and right of the head
+    for (int i = 0; i < n; i++) {
+        if (requests[i] < head)
+            left[left_count++] = requests[i];
+        else
+            right[right_count++] = requests[i];
+    }
+
+    // Sorting the left and right requests
+    for (int i = 0; i < left_count - 1; i++) {
+        for (int j = 0; j < left_count - i - 1; j++) {
+            if (left[j] > left[j + 1]) {
+                int temp = left[j];
+                left[j] = left[j + 1];
+                left[j + 1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < right_count - 1; i++) {
+        for (int j = 0; j < right_count - i - 1; j++) {
+            if (right[j] > right[j + 1]) {
+                int temp = right[j];
+                right[j] = right[j + 1];
+                right[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("\nSCAN Order: %d ", head);
+
+    // Moving towards the right end (disk_size - 1)
+    for (int i = 0; i < right_count; i++) {
+        total_movements += abs_diff(head, right[i]);
+        head = right[i];
+        printf("-> %d ", head);
+    }
+    total_movements += abs_diff(head, disk_size - 1);
+    head = disk_size - 1;
+    printf("-> %d ", head);
+
+    // Moving towards the left end (0)
+    for (int i = left_count - 1; i >= 0; i--) {
+        total_movements += abs_diff(head, left[i]);
+        head = left[i];
+        printf("-> %d ", head);
+    }
+
+    printf("\nTotal Head Movements: %d\n", total_movements);
+}
+
+int main() {
+    int n, disk_size, head, choice;
+    printf("Enter the size of Disk: ");
+    scanf("%d", &disk_size);
+    printf("Enter the number of requests: ");
+    scanf("%d", &n);
+    int requests[n];
+    printf("Enter the request sequence: ");
+    for (int i = 0; i < n; i++)
+        scanf("%d", &requests[i]);
+    printf("Enter the initial head position: ");
+    scanf("%d", &head);
+
+    do {
+        printf("\nDisk Scheduling Algorithms:\n");
+        printf("1. FCFS\n2. SCAN\n3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                fcfs(requests, n, head);
+                break;
+            case 2:
+                scan(requests, n, head, disk_size);
+                break;
+            case 3:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 3);
+
+    return 0;
+}
