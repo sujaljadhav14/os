@@ -1,0 +1,46 @@
+#include <stdio.h>
+
+int main() {
+    int pages[50], frames[10];
+    int n, f, i, j = 0, k, hit, fault = 0;
+
+    printf("Enter the number of pages: ");
+    scanf("%d", &n);
+
+    printf("Enter the page reference string: ");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &pages[i]);
+    }
+
+    printf("Enter the number of frames: ");
+    scanf("%d", &f);
+
+    // Initialize all frames to -1 (empty)
+    for (i = 0; i < f; i++) {
+        frames[i] = -1;
+    }
+
+    for (i = 0; i < n; i++) {
+        hit = 0;
+
+        // Check if page is already in frames
+        for (k = 0; k < f; k++) {
+            if (frames[k] == pages[i]) {
+                hit = 1;
+                break;
+            }
+        }
+
+        // If not a hit, it's a fault: replace the oldest page (FIFO)
+        if (hit == 0) {
+            frames[j] = pages[i];
+            j = (j + 1) % f;  // Circularly replace frames
+            fault++;
+        }
+    }
+
+    printf("\nTotal Page Hits: %d", n - fault);
+    printf("\nTotal Page Faults: %d\n", fault);
+
+    return 0;
+}
